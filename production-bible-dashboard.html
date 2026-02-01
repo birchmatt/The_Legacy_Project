@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Legacy Project - Production Bible</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+        }
+        .status-todo { background-color: #475569; }
+        .status-progress { background-color: #f59e0b; }
+        .status-done { background-color: #10b981; }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.8); }
+        }
+        .countdown-box {
+            animation: pulse-glow 3s infinite;
+        }
+    </style>
+</head>
+<body class="text-gray-100 p-4 md:p-8">
+    
+    <!-- Header Section -->
+    <header class="glass-panel rounded-2xl p-6 md:p-8 mb-8 shadow-2xl">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="countdown-box glass-panel rounded-xl p-4 md:p-6 text-center">
+                <div class="text-gray-400 text-xs md:text-sm mb-1">TIME REMAINING</div>
+                <div id="countdown" class="text-3xl md:text-4xl font-bold text-purple-400">--</div>
+                <div class="text-gray-500 text-xs mt-1">Until Wrap</div>
+            </div>
+            <div class="text-center md:text-right">
+                <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                    The Legacy Project
+                </h1>
+                <p class="text-gray-400 text-sm md:text-base">Production Bible Dashboard</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        
+        <!-- RACI Directory -->
+        <section class="glass-panel rounded-2xl p-6 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300 flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                RACI Directory
+            </h2>
+            <input type="text" id="raciSearch" placeholder="Search roles or names..." 
+                   class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-700">
+                            <th class="text-left py-2 px-2 text-purple-300">Role</th>
+                            <th class="text-left py-2 px-2 text-purple-300">Student</th>
+                        </tr>
+                    </thead>
+                    <tbody id="raciTable">
+                        <!-- Will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <button onclick="editRaci()" class="mt-4 btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                Edit Assignments
+            </button>
+        </section>
+
+        <!-- Change Log -->
+        <section class="glass-panel rounded-2xl p-6 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300 flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Change Log
+            </h2>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="changeLogInput" placeholder="Log an update..." 
+                       class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <button onclick="addChangeLog()" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold">
+                    Add
+                </button>
+            </div>
+            <div id="changeLogList" class="space-y-2 max-h-80 overflow-y-auto">
+                <!-- Will be populated by JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Interactive Shot List -->
+    <section class="glass-panel rounded-2xl p-6 shadow-2xl mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-purple-300 flex items-center gap-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            Interactive Shot List
+        </h2>
+        <div class="mb-4 flex gap-2">
+            <button onclick="addShot()" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                + Add Shot
+            </button>
+            <button onclick="exportShots()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                Export CSV
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-700">
+                        <th class="text-left py-2 px-2 text-purple-300">Shot #</th>
+                        <th class="text-left py-2 px-2 text-purple-300">Description</th>
+                        <th class="text-left py-2 px-2 text-purple-300">Status</th>
+                        <th class="text-center py-2 px-2 text-purple-300">Good Take</th>
+                        <th class="text-center py-2 px-2 text-purple-300">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="shotListTable">
+                    <!-- Will be populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Bottom Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Resources Hub -->
+        <section class="glass-panel rounded-2xl p-6 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300 flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                </svg>
+                Resources Hub
+            </h2>
+            <div id="resourcesGrid" class="grid grid-cols-2 gap-3">
+                <!-- Will be populated by JS -->
+            </div>
+            <button onclick="editResources()" class="mt-4 btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold w-full">
+                Manage Resources
+            </button>
+        </section>
+
+        <!-- Production Calendar -->
+        <section class="glass-panel rounded-2xl p-6 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300 flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                12-Week Production Calendar
+            </h2>
+            <div id="productionCalendar" class="space-y-2 max-h-80 overflow-y-auto">
+                <!-- Will be populated by JS -->
+            </div>
+            <button onclick="editCalendar()" class="mt-4 btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold w-full">
+                Edit Calendar
+            </button>
+        </section>
+
+    </div>
+
+    <script>
+        // Initialize data structures
+        let data = {
+            raciDirectory: [],
+            changeLogs: [],
+            shotList: [],
+            resources: [],
+            calendar: [],
+            projectStartDate: null,
+            projectEndDate: null
+        };
+
+        // Load data from localStorage or initialize defaults
+        function loadData() {
+            const saved = localStorage.getItem('productionBibleData');
+            if (saved) {
+                data = JSON.parse(saved);
+            } else {
+                // Initialize default data
+                data.raciDirectory = [
+                    { role: 'Director', student: '' },
+                    { role: 'Producer', student: '' },
+                    { role: 'Director of Photography', student: '' },
+                    { role: 'Camera Operator', student: '' },
+                    { role: 'Sound Recordist', student: '' },
+                    { role: 'Gaffer/Lighting', student: '' },
+                    { role: 'Editor', student: '' },
+                    { role: 'Production Designer', student: '' },
+                    { role: 'Costume Designer', student: '' },
+                    { role: 'Script Supervisor', student: '' },
+                    { role: '1st Assistant Director', student: '' },
+                    { role: 'Production Assistant', student: '' },
+                    { role: 'VFX/Graphics', student: '' }
+                ];
+                
+                data.resources = [
+                    { name: 'Script', url: '#' },
+                    { name: 'Storyboards', url: '#' },
+                    { name: 'Daily Backups', url: '#' },
+                    { name: 'Shot List', url: '#' },
+                    { name: 'Call Sheets', url: '#' },
+                    { name: 'Budget Tracker', url: '#' }
+                ];
+
+                // Initialize 12-week calendar
+                const phases = [
+                    { week: 1, phase: 'Pre-Production', milestone: 'Script Lock' },
+                    { week: 2, phase: 'Pre-Production', milestone: 'Storyboard Complete' },
+                    { week: 3, phase: 'Pre-Production', milestone: 'Location Scout' },
+                    { week: 4, phase: 'Pre-Production', milestone: 'Casting & Rehearsals' },
+                    { week: 5, phase: 'Production', milestone: 'Principal Photography Begins' },
+                    { week: 6, phase: 'Production', milestone: 'Week 1 Dailies Review' },
+                    { week: 7, phase: 'Production', milestone: 'Week 2 Shoot' },
+                    { week: 8, phase: 'Production', milestone: 'Principal Photography Wraps' },
+                    { week: 9, phase: 'Post-Production', milestone: 'Rough Cut Assembly' },
+                    { week: 10, phase: 'Post-Production', milestone: 'Fine Cut & VFX' },
+                    { week: 11, phase: 'Post-Production', milestone: 'Sound Mix & Color Grade' },
+                    { week: 12, phase: 'Delivery', milestone: 'Final Export & Premiere' }
+                ];
+                data.calendar = phases;
+                
+                // Set project start date to today if not set
+                data.projectStartDate = new Date().toISOString();
+                
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('productionBibleData', JSON.stringify(data));
+        }
+
+        // Countdown Timer
+        function updateCountdown() {
+            let end;
+            
+            // Use custom end date if set, otherwise calculate 12 weeks from start
+            if (data.projectEndDate) {
+                end = new Date(data.projectEndDate);
+            } else if (data.projectStartDate) {
+                const start = new Date(data.projectStartDate);
+                end = new Date(start);
+                end.setDate(end.getDate() + 84); // 12 weeks
+            } else {
+                document.getElementById('countdown').textContent = 'Not Set';
+                return;
+            }
+            
+            const now = new Date();
+            const diff = end - now;
+            
+            if (diff <= 0) {
+                document.getElementById('countdown').textContent = 'WRAPPED!';
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            document.getElementById('countdown').textContent = `${days}d ${hours}h`;
+        }
+
+        // RACI Directory
+        function renderRaciTable() {
+            const search = document.getElementById('raciSearch').value.toLowerCase();
+            const tbody = document.getElementById('raciTable');
+            
+            const filtered = data.raciDirectory.filter(item => 
+                item.role.toLowerCase().includes(search) || 
+                item.student.toLowerCase().includes(search)
+            );
+            
+            tbody.innerHTML = filtered.map(item => `
+                <tr class="border-b border-slate-700/50 hover:bg-slate-800/50">
+                    <td class="py-2 px-2">${item.role}</td>
+                    <td class="py-2 px-2 text-purple-200">${item.student || '<span class="text-gray-500">Unassigned</span>'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function editRaci() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50';
+            modal.innerHTML = `
+                <div class="glass-panel rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                    <h3 class="text-2xl font-bold mb-4 text-purple-300">Edit RACI Assignments</h3>
+                    <div class="space-y-3">
+                        ${data.raciDirectory.map((item, i) => `
+                            <div class="flex gap-2">
+                                <input type="text" value="${item.role}" readonly
+                                       class="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-2 text-gray-400">
+                                <input type="text" value="${item.student}" placeholder="Student name"
+                                       class="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       onchange="data.raciDirectory[${i}].student = this.value; saveData();">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="flex gap-2 mt-6">
+                        <button onclick="this.closest('.fixed').remove(); renderRaciTable();" 
+                                class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex-1">
+                            Save & Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Change Log
+        function addChangeLog() {
+            const input = document.getElementById('changeLogInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            data.changeLogs.unshift({
+                text: text,
+                timestamp: new Date().toISOString()
+            });
+            
+            input.value = '';
+            saveData();
+            renderChangeLogs();
+        }
+
+        function renderChangeLogs() {
+            const container = document.getElementById('changeLogList');
+            
+            if (data.changeLogs.length === 0) {
+                container.innerHTML = '<div class="text-gray-500 text-center py-8">No updates logged yet</div>';
+                return;
+            }
+            
+            container.innerHTML = data.changeLogs.map((log, i) => {
+                const date = new Date(log.timestamp);
+                const formatted = date.toLocaleString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: 'numeric', 
+                    minute: '2-digit' 
+                });
+                
+                return `
+                    <div class="bg-slate-800/50 rounded-lg p-3 flex justify-between items-start gap-3">
+                        <div class="flex-1">
+                            <div class="text-gray-200">${log.text}</div>
+                            <div class="text-xs text-gray-500 mt-1">${formatted}</div>
+                        </div>
+                        <button onclick="deleteChangeLog(${i})" 
+                                class="text-red-400 hover:text-red-300 text-xs">
+                            Delete
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteChangeLog(index) {
+            data.changeLogs.splice(index, 1);
+            saveData();
+            renderChangeLogs();
+        }
+
+        // Shot List
+        function addShot() {
+            const shotNum = data.shotList.length + 1;
+            data.shotList.push({
+                number: shotNum,
+                description: '',
+                status: 'todo',
+                goodTake: false
+            });
+            saveData();
+            renderShotList();
+        }
+
+        function updateShot(index, field, value) {
+            data.shotList[index][field] = value;
+            saveData();
+            renderShotList();
+        }
+
+        function deleteShot(index) {
+            data.shotList.splice(index, 1);
+            // Renumber shots
+            data.shotList.forEach((shot, i) => {
+                shot.number = i + 1;
+            });
+            saveData();
+            renderShotList();
+        }
+
+        function renderShotList() {
+            const tbody = document.getElementById('shotListTable');
+            
+            if (data.shotList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">No shots added yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.shotList.map((shot, i) => {
+                const statusClass = shot.status === 'todo' ? 'status-todo' : 
+                                   shot.status === 'progress' ? 'status-progress' : 'status-done';
+                
+                return `
+                    <tr class="border-b border-slate-700/50 hover:bg-slate-800/50">
+                        <td class="py-2 px-2 font-bold">${shot.number}</td>
+                        <td class="py-2 px-2">
+                            <input type="text" value="${shot.description}" 
+                                   class="w-full bg-transparent focus:bg-slate-800 px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                   onchange="updateShot(${i}, 'description', this.value)">
+                        </td>
+                        <td class="py-2 px-2">
+                            <select class="bg-slate-800 rounded px-2 py-1 text-xs ${statusClass}"
+                                    onchange="updateShot(${i}, 'status', this.value)">
+                                <option value="todo" ${shot.status === 'todo' ? 'selected' : ''}>To Do</option>
+                                <option value="progress" ${shot.status === 'progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="done" ${shot.status === 'done' ? 'selected' : ''}>Done</option>
+                            </select>
+                        </td>
+                        <td class="py-2 px-2 text-center">
+                            <input type="checkbox" ${shot.goodTake ? 'checked' : ''}
+                                   class="w-4 h-4 accent-purple-500"
+                                   onchange="updateShot(${i}, 'goodTake', this.checked)">
+                        </td>
+                        <td class="py-2 px-2 text-center">
+                            <button onclick="deleteShot(${i})" 
+                                    class="text-red-400 hover:text-red-300 text-xs">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportShots() {
+            const csv = [
+                ['Shot #', 'Description', 'Status', 'Good Take'],
+                ...data.shotList.map(shot => [
+                    shot.number,
+                    shot.description,
+                    shot.status,
+                    shot.goodTake ? 'Yes' : 'No'
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'shot-list.csv';
+            a.click();
+        }
+
+        // Resources Hub
+        function renderResources() {
+            const grid = document.getElementById('resourcesGrid');
+            
+            grid.innerHTML = data.resources.map(res => `
+                <a href="${res.url}" target="_blank"
+                   class="glass-panel rounded-lg p-4 hover:bg-slate-700/50 transition flex flex-col items-center justify-center gap-2 text-center">
+                    <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold">${res.name}</span>
+                </a>
+            `).join('');
+        }
+
+        function editResources() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50';
+            modal.innerHTML = `
+                <div class="glass-panel rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                    <h3 class="text-2xl font-bold mb-4 text-purple-300">Manage Resources</h3>
+                    <div id="resourceEditList" class="space-y-3">
+                        ${data.resources.map((res, i) => `
+                            <div class="flex gap-2">
+                                <input type="text" value="${res.name}" placeholder="Resource name"
+                                       class="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       onchange="data.resources[${i}].name = this.value; saveData();">
+                                <input type="text" value="${res.url}" placeholder="URL"
+                                       class="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       onchange="data.resources[${i}].url = this.value; saveData();">
+                                <button onclick="deleteResource(${i})" 
+                                        class="bg-red-600 hover:bg-red-700 px-3 rounded text-sm">
+                                    Del
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="addResource()" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                        + Add Resource
+                    </button>
+                    <div class="flex gap-2 mt-6">
+                        <button onclick="this.closest('.fixed').remove(); renderResources();" 
+                                class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex-1">
+                            Save & Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function addResource() {
+            data.resources.push({ name: 'New Resource', url: '#' });
+            saveData();
+            document.querySelector('.fixed').remove();
+            editResources();
+        }
+
+        function deleteResource(index) {
+            data.resources.splice(index, 1);
+            saveData();
+            document.querySelector('.fixed').remove();
+            editResources();
+        }
+
+        // Production Calendar
+        function renderCalendar() {
+            const container = document.getElementById('productionCalendar');
+            
+            const now = new Date();
+            const start = new Date(data.projectStartDate);
+            const currentWeek = Math.ceil((now - start) / (7 * 24 * 60 * 60 * 1000));
+            
+            container.innerHTML = data.calendar.map(item => {
+                const isCurrent = item.week === currentWeek;
+                const isPast = item.week < currentWeek;
+                
+                return `
+                    <div class="glass-panel rounded-lg p-3 ${isCurrent ? 'ring-2 ring-purple-500' : ''} ${isPast ? 'opacity-60' : ''}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-purple-400 font-bold">Week ${item.week}</span>
+                                    ${isCurrent ? '<span class="text-xs bg-purple-600 px-2 py-0.5 rounded">CURRENT</span>' : ''}
+                                </div>
+                                <div class="text-sm text-gray-400 mt-1">${item.phase}</div>
+                                <div class="text-gray-200 mt-1">${item.milestone}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function editCalendar() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50';
+            modal.innerHTML = `
+                <div class="glass-panel rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                    <h3 class="text-2xl font-bold mb-4 text-purple-300">Edit Production Calendar</h3>
+                    <div class="space-y-3">
+                        ${data.calendar.map((item, i) => `
+                            <div class="bg-slate-800/50 rounded p-3">
+                                <div class="text-sm text-gray-400 mb-2">Week ${item.week}</div>
+                                <input type="text" value="${item.phase}" placeholder="Phase"
+                                       class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       onchange="data.calendar[${i}].phase = this.value; saveData();">
+                                <input type="text" value="${item.milestone}" placeholder="Milestone"
+                                       class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                       onchange="data.calendar[${i}].milestone = this.value; saveData();">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 space-y-3">
+                        <div class="p-3 bg-slate-800/50 rounded">
+                            <label class="text-sm text-gray-400 block mb-2">Project Start Date</label>
+                            <input type="date" value="${data.projectStartDate ? data.projectStartDate.split('T')[0] : ''}"
+                                   class="bg-slate-800 border border-slate-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                   onchange="data.projectStartDate = new Date(this.value).toISOString(); saveData(); updateCountdown();">
+                        </div>
+                        <div class="p-3 bg-purple-900/30 rounded border border-purple-500/50">
+                            <label class="text-sm text-purple-300 block mb-2 font-semibold">
+                                🎬 Production Deadline (Custom End Date)
+                            </label>
+                            <input type="date" value="${data.projectEndDate ? data.projectEndDate.split('T')[0] : ''}"
+                                   class="bg-slate-800 border border-purple-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                   onchange="data.projectEndDate = new Date(this.value).toISOString(); saveData(); updateCountdown();">
+                            <p class="text-xs text-gray-400 mt-2">Set your exact deadline. This overrides the 12-week calculation.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-6">
+                        <button onclick="this.closest('.fixed').remove(); renderCalendar();" 
+                                class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex-1">
+                            Save & Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Event Listeners
+        document.getElementById('raciSearch').addEventListener('input', renderRaciTable);
+        document.getElementById('changeLogInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addChangeLog();
+        });
+
+        // Initialize
+        loadData();
+        renderRaciTable();
+        renderChangeLogs();
+        renderShotList();
+        renderResources();
+        renderCalendar();
+        updateCountdown();
+        setInterval(updateCountdown, 60000); // Update every minute
+    </script>
+
+</body>
+</html>
